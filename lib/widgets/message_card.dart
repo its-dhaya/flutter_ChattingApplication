@@ -1,6 +1,8 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:chattify/api/apis.dart';
+import 'package:chattify/helper/date_util.dart';
 import 'package:chattify/main.dart';
 import 'package:chattify/widgets/message.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +23,12 @@ class _MessageCardState extends State<MessageCard> {
   }
 
   Widget _blueMessage(){
+  
+     if(widget.message.read.isEmpty){
+      APIs.updateMessageStatus(widget.message);
+      log('message updated');
+     }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -41,7 +49,7 @@ class _MessageCardState extends State<MessageCard> {
          ),
          Padding(
            padding:  EdgeInsets.only(right: mq.width * .04),
-           child: Text(widget.message.sent,
+           child: Text(DateUtil.getformatted(context: context, time: widget.message.sent),
            style: TextStyle(color: Colors.black54),),
          )
 
@@ -49,6 +57,7 @@ class _MessageCardState extends State<MessageCard> {
   }
 
   Widget _tealMessage(){
+ 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -56,9 +65,12 @@ class _MessageCardState extends State<MessageCard> {
          Row(
            children: [
             SizedBox(width:  mq.width * .04,),
+          if(widget.message.read.isNotEmpty)
             Icon(Icons.done_all_rounded,color: Colors.blue,size:  20,),
             SizedBox(width: 2,),
-              Text(widget.message.read + '12:00 AM')
+              Text(
+                DateUtil.getformatted(context: context, time: widget.message.sent),
+              ),
            ],
          ),
             Flexible(

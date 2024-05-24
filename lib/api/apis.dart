@@ -93,5 +93,8 @@ static String getConversationID(String id) => user.uid.hashCode <= id.hashCode ?
     final ref  = firestore.collection('chats/${getConversationID(chatuser.id)}/messages/');
     await ref.doc(time).set(message.toJson());
   }
+  static Future<void> updateMessageStatus(Messages message)async {
+    firestore.collection('chats/${getConversationID(message.fromid)}/messages/').doc(message.sent).update({'read':DateTime.now().millisecondsSinceEpoch.toString()});
+  }
 }
 

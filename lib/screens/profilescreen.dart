@@ -47,8 +47,13 @@ class _ProfilescreenState extends State<Profilescreen> {
         child: FloatingActionButton.extended
         (backgroundColor: Colors.tealAccent.shade700,
           onPressed:() async {
+            Dialogs.showProgressbar(context);
+          await APIs.updateActiveStatus(false);
           await APIs.auth.signOut();
           await GoogleSignIn().signOut();
+          Navigator.pop(context);
+          Navigator.pop(context);
+          APIs.auth = FirebaseAuth.instance;
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>Loginscreen()));
 
         },

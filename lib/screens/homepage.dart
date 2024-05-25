@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:ffi';
 
 import 'package:chattify/api/apis.dart';
 import 'package:chattify/auth/loginscreen.dart';
@@ -9,6 +10,7 @@ import 'package:chattify/widgets/chat_user_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class Homepage extends StatefulWidget {
@@ -30,6 +32,18 @@ class _HomepageState extends State<Homepage> {
     // TODO: implement initState
     super.initState();
     APIs.getselfInfo();
+    APIs.updateActiveStatus(true);
+    SystemChannels.lifecycle.setMessageHandler((message){
+      log('Message:$message');
+      if(APIs.auth.currentUser!=null){
+      if(message.toString().contains('resume')){ APIs.updateActiveStatus(true);}
+      if(message.toString().contains('pause')) {APIs.updateActiveStatus(false);}
+      }
+
+      return Future.value(message);
+
+
+    });
   }
 
   @override

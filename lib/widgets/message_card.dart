@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chattify/api/apis.dart';
 import 'package:chattify/helper/date_util.dart';
 import 'package:chattify/main.dart';
@@ -26,7 +27,7 @@ class _MessageCardState extends State<MessageCard> {
   
      if(widget.message.read.isEmpty){
       APIs.updateMessageStatus(widget.message);
-      log('message updated');
+      
      }
 
     return Row(
@@ -34,7 +35,7 @@ class _MessageCardState extends State<MessageCard> {
       children: [
          Flexible(
            child: Container(
-            padding: EdgeInsets.all(mq.width * .04),
+            padding: EdgeInsets.all(widget.message.type == Type.image ? mq.width * .03:mq.width *.04),
             margin: EdgeInsets.symmetric(horizontal: mq.width * .02,vertical: mq.height *.01),
             decoration: BoxDecoration(color: Color.fromARGB(255, 57, 154, 196,
             
@@ -42,18 +43,31 @@ class _MessageCardState extends State<MessageCard> {
             borderRadius: BorderRadius.circular(25)
             ),
                    
-            child: Text(widget.message.msg,
+            child: widget.message.type == Type.text ?
+                Text(widget.message.msg,
             style: TextStyle(fontSize: 15,color: Colors.white),
-            ),
+                ):ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+            child: CachedNetworkImage(
+            imageUrl: widget.message.msg,
+          
+            placeholder: (context, url) => CircularProgressIndicator(strokeWidth: 2,),
+            errorWidget: (context, url, error) => Icon(Icons.image,size:70),)
+                 ),
+          ),
            ),
-         ),
+        
+        
          Padding(
            padding:  EdgeInsets.only(right: mq.width * .04),
            child: Text(DateUtil.getformatted(context: context, time: widget.message.sent),
            style: TextStyle(color: Colors.black54),),
-         )
+         ),
+         
 
-    ],);
+    ]
+    );
+    
   }
 
   Widget _tealMessage(){
@@ -75,18 +89,27 @@ class _MessageCardState extends State<MessageCard> {
          ),
             Flexible(
            child: Container(
-            padding: EdgeInsets.all(mq.width * .04),
+            padding: EdgeInsets.all(widget.message.type == Type.image ? mq.width * .03:mq.width *.04),
             margin: EdgeInsets.symmetric(horizontal: mq.width * .02,vertical: mq.height *.01),
             decoration: BoxDecoration(color: Colors.tealAccent.shade700,
             borderRadius: BorderRadius.circular(25)
             ),
                    
-            child: Text(widget.message.msg,
+            child:  widget.message.type == Type.text ?
+                Text(widget.message.msg,
             style: TextStyle(fontSize: 15,color: Colors.white),
+                ):ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+            child: CachedNetworkImage(
+            imageUrl: widget.message.msg,
+          
+            placeholder: (context, url) => CircularProgressIndicator(strokeWidth: 2,),
+            errorWidget: (context, url, error) => Icon(Icons.image,size:70),)
+                 ),
             ),
            ),
-         ),
+         
 
-    ],);;
+    ],);
   }
 }

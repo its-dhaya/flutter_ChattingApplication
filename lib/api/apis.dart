@@ -82,19 +82,64 @@ class APIs{
 static String getConversationID(String id) => user.uid.hashCode <= id.hashCode ?'${user.uid}_$id' : '${id}_${user.uid}';
 
    static Stream<QuerySnapshot<Map<String,dynamic>>> getAllMessages(ChatUserData user){
-    return firestore.collection('chats/${getConversationID(user.id)}/messages/').snapshots();
+    return firestore.collection('chats/${getConversationID(user.id)}/messages/')
+    .orderBy('sent',descending: true)
+    .snapshots();
   }
 
-  static Future<void> sendMessage(ChatUserData chatuser, String msg) async{
+  static Future<void> sendMessage(ChatUserData chatuser, String msg,Type type) async{
     final time = DateTime.now().millisecondsSinceEpoch.toString();
 
-    final Messages message = Messages(msg: msg, read: '', told: chatuser.id, type: Type.text, fromid: user.uid, sent: time);
+    final Messages message = Messages(
+    msg: msg,
+    read: '', 
+    told: chatuser.id,
+    type: type,
+    fromid: user.uid, 
+    sent: time);
 
     final ref  = firestore.collection('chats/${getConversationID(chatuser.id)}/messages/');
     await ref.doc(time).set(message.toJson());
   }
   static Future<void> updateMessageStatus(Messages message)async {
-    firestore.collection('chats/${getConversationID(message.fromid)}/messages/').doc(message.sent).update({'read':DateTime.now().millisecondsSinceEpoch.toString()});
+    firestore.collection('chats/${getConversationID(message.fromid)}/messages/')
+    .doc(message.sent)
+    .update({'read':DateTime.now().millisecondsSinceEpoch.toString()});
   }
+     static Stream<QuerySnapshot<Map<String,dynamic>>> getLastMessages(ChatUserData user){
+    return firestore.collection('chats/${getConversationID(user.id)}/messages/')
+    .orderBy('sent',descending: true)
+    .limit(1)
+    .snapshots();
+  }
+
+  static Future<void> sendChatImage(ChatUserData chatuser, File file) async{
+    final ex = file.path.split('.').last;
+    final ref = storage.ref().child('images/${getConversationID(chatuser.id)}/${DateTime.now().millisecondsSinceEpoch}.$ex');
+    await ref.putFile(file,SettableMetadata(contentType: 'image/$ex')).then((p0){
+      log('Data transferred:${p0.bytesTransferred / 1000}kb');
+    });
+   final imageUrl = await ref.getDownloadURL();
+    await sendMessage(chatuser, imageUrl, Type.image);
+  }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(ChatUserData chatuser){
+    return firestore
+    .collection('users')
+    .where('id',isEqualTo: chatuser.id)
+    .snapshots();
+
+  }
+
+  static Future<void> updateActiveStatus(bool isOnline)async{
+    firestore
+    .collection('users')
+    .doc(user.uid)
+    .update({
+      'is_online': isOnline,
+      'last_active': DateTime.now().millisecondsSinceEpoch.toString()
+    });
+  }
+
 }
 

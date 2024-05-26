@@ -25,6 +25,25 @@ class DateUtil{
      :'${sent.day} ${_getmonth(sent)}';
   }
 
+     static String getMessageTime(
+    {required BuildContext context,required String time}
+  ){
+     final DateTime  sent = DateTime.fromMillisecondsSinceEpoch(int.parse(time));
+     final DateTime  now  =  DateTime.now();
+
+    final formattedTime = TimeOfDay.fromDateTime(sent).format(context);
+    if(now.day==sent.day && 
+       now.month == sent.month &&
+       now.year == sent.year){
+        return formattedTime;
+       }
+       return now.year == sent.year
+       ? '$formattedTime - ${sent.day} ${_getmonth(sent)}'
+       : '$formattedTime - ${sent.day} ${_getmonth(sent)} ${sent.year}';
+
+
+  }
+
  static String getLastActiveTime({required BuildContext context, required String lastActive}){
     final int i = int.tryParse(lastActive)??-1;
 

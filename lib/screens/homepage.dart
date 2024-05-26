@@ -32,7 +32,7 @@ class _HomepageState extends State<Homepage> {
     // TODO: implement initState
     super.initState();
     APIs.getselfInfo();
-    APIs.updateActiveStatus(true);
+     
     SystemChannels.lifecycle.setMessageHandler((message){
       log('Message:$message');
       if(APIs.auth.currentUser!=null){

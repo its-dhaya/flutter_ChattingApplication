@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chattify/main.dart';
+import 'package:chattify/screens/view_profilescreen%20.dart';
 import 'package:chattify/widgets/chat_user_data.dart';
 import 'package:flutter/material.dart';
 
@@ -41,7 +42,9 @@ final ChatUserData user;
           right: 8,
           top: 6,
           child: MaterialButton(
-            onPressed: (){},
+            onPressed: (){
+              Navigator.pushReplacement(context,MaterialPageRoute(builder:(_)=>ViewProfilescreen(user: user)));
+            },
             minWidth: 0,
             padding: EdgeInsets.all(0),
             shape: CircleBorder(),

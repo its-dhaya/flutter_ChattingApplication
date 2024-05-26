@@ -1,12 +1,11 @@
-import 'dart:developer';
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chattify/api/apis.dart';
 import 'package:chattify/helper/date_util.dart';
+import 'package:chattify/helper/dialog.dart';
 import 'package:chattify/main.dart';
 import 'package:chattify/widgets/message.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class MessageCard extends StatefulWidget {
   const MessageCard({super.key,required this.message});
@@ -20,7 +19,12 @@ class MessageCard extends StatefulWidget {
 class _MessageCardState extends State<MessageCard> {
   @override
   Widget build(BuildContext context) {
-    return APIs.user.uid == widget.message.fromid ? _tealMessage() :_blueMessage();
+    bool isMe = APIs.user.uid == widget.message.fromid;
+    return InkWell(
+      onLongPress: (){
+        _showBottomsheet(isMe);
+      },
+      child: isMe ? _tealMessage() : _blueMessage(),);
   }
 
   Widget _blueMessage(){
@@ -110,6 +114,117 @@ class _MessageCardState extends State<MessageCard> {
            ),
          
 
-    ],);
+    ],
+    );
+  }
+    void _showBottomsheet(bool isMe){
+    showModalBottomSheet(context: context,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.only(topLeft: Radius.circular(25),topRight: Radius.circular(25))
+    ),
+
+     builder: (_){
+      return ListView(
+      shrinkWrap: true,
+        children: [
+          Container(
+           height: 4,
+           margin: EdgeInsets.symmetric(
+            vertical: mq.height * .015,horizontal: mq.width * .4
+           ),
+            decoration: BoxDecoration(color: Colors.white,borderRadius: BorderRadius.circular(8)),
+          ),
+          
+          widget.message.type == Type.text ?
+           
+          _OptionItem(
+            icon: Icon(Icons.copy_all_outlined,color: Colors.tealAccent.shade700,size: 30,),
+           name: 'Copy Text',
+          onTap: () async{
+            await Clipboard.setData(
+              ClipboardData(text: widget.message.msg)
+            ).then((value){
+              Navigator.pop(context);
+
+              Dialogs.showSnackbar(context, 'Copied');
+            });
+          }):
+           
+          _OptionItem(
+            icon: Icon(Icons.download_rounded,color: Colors.tealAccent.shade700,size: 30,),
+           name: 'Save Image',
+          onTap: (){}),
+          
+          if(isMe)
+          Divider(
+            color: Colors.black,
+            endIndent: mq.width *.08,
+            indent: mq.width *.08,
+          ),
+           
+           if(widget.message.type == Type.text  && isMe)
+            _OptionItem(
+            icon: Icon(Icons.edit_square,color: Colors.blue,size: 30,),
+           name: 'Edit Message',
+          onTap: (){}),
+            
+            if(isMe)
+            _OptionItem(
+            icon: Icon(Icons.delete_sharp,color: Colors.red,size: 30,),
+           name: 'Delete Message',
+          onTap: (){}),
+
+            Divider(
+            color: Colors.black,
+            endIndent: mq.width *.08,
+            indent: mq.width *.08,
+          ),
+
+            _OptionItem(
+            icon: Icon(Icons.remove_red_eye,color: Colors.blue,size: 30,),
+           name: 'Sent at ${DateUtil.getMessageTime(context: context, time: widget.message.sent)}',
+          onTap: (){}),
+
+            _OptionItem(
+            icon: Icon(Icons.remove_red_eye,color: Colors.green,size: 30,),
+           name: widget.message.read.isEmpty
+           ? 'Read at  Not seen'
+           : 'Read at ${DateUtil.getMessageTime(context: context, time: widget.message.read)}',
+          onTap: (){}),
+
+
+          
+          
+          
+        ],
+      );
+     });
+  }
+}
+
+class _OptionItem extends StatelessWidget {
+  final Icon icon;
+  final String name;
+  final VoidCallback onTap;
+  const _OptionItem({required this.icon,required this.name,required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: ()=>onTap(),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: mq.width * .05,
+          top: mq.height *.015,
+          bottom: mq.height * .02
+        ),
+        child: Row(
+          children: [
+            icon,
+            Flexible(child: Text('  $name'))
+          ],
+        ),
+      ),
+    );
   }
 }

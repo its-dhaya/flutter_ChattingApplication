@@ -6,6 +6,7 @@ import 'package:chattify/widgets/chat_user_data.dart';
 import 'package:chattify/widgets/message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class APIs{
@@ -20,6 +21,21 @@ class APIs{
   static get user => auth.currentUser!;
 
 
+  static FirebaseMessaging firebasemessage = FirebaseMessaging.instance;
+
+  static Future<void> getFirebaseMessagToken()async {
+   await firebasemessage.requestPermission();
+
+   await firebasemessage.getToken().then((t){
+    if(t!=null){
+      me.pushToken = t;
+      log('Pushtoken: $t');
+    }
+   });
+
+  }
+
+
   static Future<bool> userExists()async{
     return (await firestore.collection('users').doc(user.uid).get()).exists;
   }
@@ -31,6 +47,10 @@ class APIs{
     .then((user) async{
       if(user.exists){
         me =ChatUserData.fromJson(user.data()!);
+       await  getFirebaseMessagToken();
+         APIs.updateActiveStatus(true);
+         log('My data:${user.data()}');
+
       }else{
         await createUser().then((value)=>getselfInfo());
       }
@@ -137,7 +157,8 @@ static String getConversationID(String id) => user.uid.hashCode <= id.hashCode ?
     .doc(user.uid)
     .update({
       'is_online': isOnline,
-      'last_active': DateTime.now().millisecondsSinceEpoch.toString()
+      'last_active': DateTime.now().millisecondsSinceEpoch.toString(),
+      'push_token':me.pushToken,
     });
   }
 

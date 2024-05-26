@@ -162,5 +162,16 @@ static String getConversationID(String id) => user.uid.hashCode <= id.hashCode ?
     });
   }
 
+  static Future<void> deleteMessage(Messages message) async{
+    await firestore 
+    .collection('chats/${getConversationID(message.told)}/messages/')
+    .doc(message.sent)
+    .delete();
+
+    if(message.type == Type.image){
+      await storage.refFromURL(message.msg).delete();
+    }
+  }
+
 }
 

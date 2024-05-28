@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 
 class APIs{
   static FirebaseAuth auth = FirebaseAuth.instance;
@@ -39,6 +40,31 @@ class APIs{
   static Future<bool> userExists()async{
     return (await firestore.collection('users').doc(user.uid).get()).exists;
   }
+  
+    static Future<bool> showuserExists(String email)async{
+      final data = await firestore
+      .collection('users')
+      .where('email',isEqualTo: email)
+      .get();
+
+      log('data:${data.docs}');
+      
+      if(data.docs.isNotEmpty && data.docs.first.id != user.uid){
+        log('user exists:${data.docs.first.data()}');
+       firestore
+       .collection('users')
+       .doc(user.uid)
+       .collection('my_users')
+       .doc(data.docs.first.id)
+       .set({});
+        return true;
+      }
+      else{
+        return false;
+      }
+    
+  }
+
   static Future<void> getselfInfo()async{
     return await firestore
     .collection('users')
@@ -75,8 +101,30 @@ class APIs{
     return await firestore.collection('users').doc(user.uid).set(chatuser.toJson());
   }
 
-  static Stream<QuerySnapshot<Map<String,dynamic>>> getAllusers(){
-    return APIs.firestore.collection('users').where('id',isNotEqualTo: user.uid).snapshots();
+
+  static Stream<QuerySnapshot<Map<String,dynamic>>> getMyusers(){
+    return firestore
+    .collection('users')
+    .doc(user.uid)
+    .collection('my_users')
+    .snapshots();
+  }
+
+  static Stream<QuerySnapshot<Map<String,dynamic>>> getAllusers(List<String> usersIds){
+    log('\nUsers id:$usersIds');
+    return firestore.collection('users')
+    .where('id',whereIn: usersIds)
+    // .where('id',isNotEqualTo: user.uid)
+    .snapshots();
+  }
+     static Future<void> sendfirstmessage(
+      ChatUserData chatuser, String msg, Type type
+     )async{
+    await  firestore.collection('users').doc(chatuser.id)
+    .collection('my_users')
+    .doc(user.uid)
+    .set({})
+    .then((value)=> sendMessage(chatuser, msg, type));
   }
 
    static Future<void> updateUserInfo()async{
@@ -171,6 +219,14 @@ static String getConversationID(String id) => user.uid.hashCode <= id.hashCode ?
     if(message.type == Type.image){
       await storage.refFromURL(message.msg).delete();
     }
+  }
+
+    static Future<void> updateMessage(Messages message,String updatedMessage) async{
+    await firestore 
+    .collection('chats/${getConversationID(message.told)}/messages/')
+    .doc(message.sent)
+    .update({'msg':updatedMessage});
+
   }
 
 }

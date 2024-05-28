@@ -4,9 +4,11 @@ import 'dart:ffi';
 
 import 'package:chattify/api/apis.dart';
 import 'package:chattify/auth/loginscreen.dart';
+import 'package:chattify/helper/dialog.dart';
 import 'package:chattify/screens/profilescreen.dart';
 import 'package:chattify/widgets/chat_user.dart';
 import 'package:chattify/widgets/chat_user_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -114,17 +116,24 @@ class _HomepageState extends State<Homepage> {
             padding: const EdgeInsets.all(8.0),
             child: FloatingActionButton(
               onPressed: () async {
-                await APIs.auth.signOut();
-                await GoogleSignIn().signOut();
-                Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (_) => Loginscreen()));
+               _showuserexists();
               },
               backgroundColor: Colors.tealAccent.shade700,
               child: Icon(Icons.add_comment_rounded, color: Colors.white),
             ),
           ),
-          body: StreamBuilder(
-            stream: APIs.getAllusers(),
+          body:  StreamBuilder<QuerySnapshot>(stream: APIs.getMyusers(), builder: (context,snapshot){
+                switch (snapshot.connectionState) {
+                case ConnectionState.waiting:
+                case ConnectionState.none:
+                  // return const Center(child: CircularProgressIndicator(),);
+
+                case ConnectionState.active:
+                case ConnectionState.done:
+           return StreamBuilder(
+            stream: APIs.getAllusers(
+              snapshot.data?.docs.map((e)=>e.id).toList()?? []
+            ),
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.waiting:
@@ -153,9 +162,58 @@ class _HomepageState extends State<Homepage> {
                   }
               }
             },
-          ),
+          );
+            }
+
+          })
         ),
       ),
     );
+  }
+  void _showuserexists(){
+    String email ='';
+
+    showDialog(context: context, builder: (_)=>AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+
+        
+      ),
+      title: Row(
+        children: [
+          Icon(Icons.message,
+          color: Colors.blue,
+          size: 20,),
+          Text('Add user')
+        ],
+      ),
+      content: TextFormField(
+      maxLines: null,
+      onChanged: (value)=>email = value,
+      decoration: InputDecoration(
+        hintText: 'Enter user mail',
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20))),
+      ),
+      actions: [
+        MaterialButton(onPressed: (){
+          Navigator.pop(context);
+        },
+        child: Text('Cancel',style:TextStyle(color: Colors.blue),)
+        ,),
+        MaterialButton(onPressed: (){
+          Navigator.pop(context);
+          if(email.isNotEmpty){
+          APIs.showuserExists(email).then((value){
+            if(!value){
+              Dialogs.showSnackbar(context, 'user does not exists');
+            }
+          });
+          }
+        },
+        child: Text('Add',style:TextStyle(color: Colors.blue),)
+        ,)
+      ],
+    ));
+    
   }
 }

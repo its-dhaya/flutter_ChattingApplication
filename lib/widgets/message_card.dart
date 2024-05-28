@@ -191,7 +191,9 @@ class _MessageCardState extends State<MessageCard> {
                       size: 30,
                     ),
                     name: 'Edit Message',
-                    onTap: () {}),
+                    onTap: () {
+                      _showupdatemsg();
+                    }),
               if (isMe)
                 _OptionItem(
                     icon: Icon(
@@ -233,6 +235,45 @@ class _MessageCardState extends State<MessageCard> {
           );
         });
   }
+
+  void _showupdatemsg(){
+    String updatemsg = widget.message.msg;
+
+    showDialog(context: context, builder: (_)=>AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+
+        
+      ),
+      title: Row(
+        children: [
+          Icon(Icons.message,
+          color: Colors.blue,
+          size: 20,),
+          Text('Edit')
+        ],
+      ),
+      content: TextFormField(initialValue: updatemsg,
+      maxLines: null,
+      onChanged: (value)=>updatemsg = value,
+      decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(20))),
+      ),
+      actions: [
+        MaterialButton(onPressed: (){
+          Navigator.pop(context);
+        },
+        child: Text('Cancel',style:TextStyle(color: Colors.blue),)
+        ,),
+        MaterialButton(onPressed: (){
+          Navigator.pop(context);
+          APIs.updateMessage(widget.message, updatemsg);
+        },
+        child: Text('Save',style:TextStyle(color: Colors.blue),)
+        ,)
+      ],
+    ));
+    
+  }
 }
 
 class _OptionItem extends StatelessWidget {
@@ -259,5 +300,9 @@ class _OptionItem extends StatelessWidget {
         ),
       ),
     );
+
+
   }
+
+
 }

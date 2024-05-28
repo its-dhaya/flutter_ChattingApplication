@@ -1,14 +1,11 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chattify/api/apis.dart';
 import 'package:chattify/helper/date_util.dart';
 import 'package:chattify/main.dart';
 import 'package:chattify/screens/homepage.dart';
 import 'package:chattify/screens/view_profilescreen%20.dart';
-import 'package:chattify/widgets/chat_user.dart';
 import 'package:chattify/widgets/chat_user_data.dart';
 import 'package:chattify/widgets/message.dart';
 import 'package:chattify/widgets/message_card.dart';
@@ -55,7 +52,7 @@ bool _showemoji= false, _isUploading = false;
           child: Scaffold(
                appBar: AppBar(
                 backgroundColor: Colors.tealAccent.shade700,
-                automaticallyImplyLeading: false,
+                automaticallyImplyLeading: true,
                 flexibleSpace: _appbar(),
                ),
                
@@ -153,7 +150,9 @@ bool _showemoji= false, _isUploading = false;
          
         return Row(
       children: [
+        
         IconButton(onPressed: (){
+          
           Navigator.pushReplacement(context,MaterialPageRoute(builder: (_)=>Homepage()));
         }, icon: Icon(Icons.arrow_back,color: Colors.white,)),
         ClipOval(

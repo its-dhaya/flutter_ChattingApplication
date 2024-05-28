@@ -1,5 +1,3 @@
-import 'package:chattify/auth/loginscreen.dart';
-import 'package:chattify/screens/homepage.dart';
 import 'package:chattify/screens/splashscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';

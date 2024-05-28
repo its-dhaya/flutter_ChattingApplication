@@ -1,19 +1,12 @@
-import 'dart:convert';
 import 'dart:developer';
-import 'dart:ffi';
-
 import 'package:chattify/api/apis.dart';
-import 'package:chattify/auth/loginscreen.dart';
 import 'package:chattify/helper/dialog.dart';
 import 'package:chattify/screens/profilescreen.dart';
 import 'package:chattify/widgets/chat_user.dart';
 import 'package:chattify/widgets/chat_user_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});

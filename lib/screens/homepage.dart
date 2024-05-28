@@ -43,6 +43,7 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Colors.tealAccent.shade700));
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: WillPopScope(
@@ -115,7 +116,7 @@ class _HomepageState extends State<Homepage> {
               child: Icon(Icons.add_comment_rounded, color: Colors.white),
             ),
           ),
-          body:  StreamBuilder<QuerySnapshot>(stream: APIs.getMyusers(), builder: (context,snapshot){
+          body:  StreamBuilder(stream: APIs.getMyusers(), builder: (context,snapshot){
                 switch (snapshot.connectionState) {
                 case ConnectionState.waiting:
                 case ConnectionState.none:

@@ -18,13 +18,17 @@ class ChatScreen extends StatefulWidget {
 
   final ChatUserData user;
   const ChatScreen({super.key,required this.user});
+  
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
+
+  
 }
 
 class _ChatScreenState extends State<ChatScreen> {
  List<Messages> _list = [];
+
 
 bool _showemoji= false, _isUploading = false;
 
@@ -32,6 +36,7 @@ bool _showemoji= false, _isUploading = false;
 
   @override
   Widget build(BuildContext context) {
+    
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Colors.tealAccent.shade700));
     return GestureDetector(
       onTap: ()=>FocusScope.of(context).unfocus(),
@@ -139,56 +144,64 @@ bool _showemoji= false, _isUploading = false;
     );
   }
 
-  Widget _appbar(){
-    return  InkWell(
-      onTap: (){
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>ViewProfilescreen(user: widget.user)));
-      },
-      child: StreamBuilder(stream:APIs.getUserInfo(widget.user) ,builder: (context,snapshot){
-          final data = snapshot.data?.docs;
-           final list = data?.map((e) => ChatUserData.fromJson(e.data())).toList() ?? [];
+Widget _appbar(){
+  return InkWell(
+    onTap: (){
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>ViewProfilescreen(user: widget.user)));
+    },
+    child: StreamBuilder(
+      stream: APIs.getUserInfo(widget.user),
+      builder: (context, snapshot) {
+        final data = snapshot.data?.docs;
+        final list = data?.map((e) => ChatUserData.fromJson(e.data())).toList() ?? [];
          
-        return Row(
-      children: [
-        
-        IconButton(onPressed: (){
-          
-          Navigator.pushReplacement(context,MaterialPageRoute(builder: (_)=>Homepage()));
-        }, icon: Icon(Icons.arrow_back,color: Colors.white,)),
-        ClipOval(
-          child: ClipRect(
-            child: CachedNetworkImage(
-              width: mq.height * .05,
-              height: mq.height * .05,
-            imageUrl:list.isNotEmpty? list[0].image: widget.user.image,
-            // placeholder: (context, url) => CircularProgressIndicator(),
-            errorWidget: (context, url, error) => CircleAvatar(child: Icon(Icons.person),)
-                 ),
+        return Container(
+          color: Colors.tealAccent.shade700,  // Set your desired background color here
+          padding: EdgeInsets.symmetric(horizontal: 16.0),  // Optional: Add some padding
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: (){
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>Homepage()));
+                },
+                icon: Icon(Icons.arrow_back, color: Colors.white),
+              ),
+              ClipOval(
+                child: ClipRect(
+                  child: CachedNetworkImage(
+                    width: mq.height * .05,
+                    height: mq.height * .05,
+                    imageUrl: list.isNotEmpty ? list[0].image : widget.user.image,
+                    // placeholder: (context, url) => CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => CircleAvatar(child: Icon(Icons.person)),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    list.isNotEmpty ? list[0].name : widget.user.name,
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  Text(
+                    list.isNotEmpty
+                      ? list[0].isOnline ? 'online' : DateUtil.getLastActiveTime(context: context, lastActive: list[0].lastActive)
+                      : DateUtil.getLastActiveTime(context: context, lastActive: widget.user.lastActive),
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  )
+                ],
+              )
+            ],
           ),
-        ),
-        SizedBox(width: 8,),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(list.isNotEmpty? list[0].name: widget.user.name,
-            style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 15),
-            ),
-            Text(
-              list.isNotEmpty
-              ?list[0].isOnline?'online'
-              :DateUtil.getLastActiveTime(context: context, 
-              lastActive: list[0].lastActive)
-              :DateUtil.getLastActiveTime(context: context,
-               lastActive: widget.user.lastActive)
-              ,style: TextStyle(color: Colors.white,fontSize: 12),)
-          ],
-        )
-      ],
-    );
-      },),
-    );
-  }
+        );
+      },
+    ),
+  );
+}
+
 
   Widget _chatInput(){
     return Padding(

@@ -1,13 +1,12 @@
 import 'dart:developer';
 import 'dart:io';
-
-
 import 'package:chattify/widgets/chat_user_data.dart';
 import 'package:chattify/widgets/message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 
 class APIs{
   static FirebaseAuth auth = FirebaseAuth.instance;
@@ -34,6 +33,8 @@ class APIs{
    });
 
   }
+
+  
 
 
   static Future<bool> userExists()async{
@@ -109,18 +110,15 @@ class APIs{
     .snapshots();
   }
 
-static Stream<QuerySnapshot<Map<String, dynamic>>> getAllusers(List<String> usersIds) {
-  log('\nUsers id: $usersIds');
-  if (usersIds.isEmpty) {
-    // Return an empty stream if the list is empty
-    return Stream.empty();
-  } else {
-    return firestore.collection('users')
-      .where('id', whereIn: usersIds)
-      .snapshots();
+  static Stream<QuerySnapshot<Map<String,dynamic>>> getAllusers(List<String>? usersIds){
+    log('\nUsers id:$usersIds');
+    return firestore
+    .collection('users')
+    .where('id',whereIn: usersIds)
+    // .where('id',isNotEqualTo: user.uid)
+    
+    .snapshots();
   }
-}
-
      static Future<void> sendfirstmessage(
       ChatUserData chatuser, String msg, Type type
      )async{

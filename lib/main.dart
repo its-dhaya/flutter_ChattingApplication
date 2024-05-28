@@ -12,7 +12,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp,]);
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Colors.tealAccent.shade700));
   runApp(const MyApp());
 }
 

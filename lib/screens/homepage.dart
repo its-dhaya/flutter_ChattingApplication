@@ -17,33 +17,34 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   List<ChatUserData> _list = [];
-
   final List<ChatUserData> _searchList = [];
-
   bool _isSearching = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     APIs.getselfInfo();
      
-    SystemChannels.lifecycle.setMessageHandler((message){
-      log('Message:$message');
-      if(APIs.auth.currentUser!=null){
-      if(message.toString().contains('resume')){ APIs.updateActiveStatus(true);}
-      if(message.toString().contains('pause')) {APIs.updateActiveStatus(false);}
+    SystemChannels.lifecycle.setMessageHandler((message) {
+      log('Message: $message');
+      if (APIs.auth.currentUser != null) {
+        if (message.toString().contains('resume')) {
+          APIs.updateActiveStatus(true);
+        }
+        if (message.toString().contains('pause')) {
+          APIs.updateActiveStatus(false);
+        }
       }
 
       return Future.value(message);
-
-
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Colors.tealAccent.shade700));
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(statusBarColor: Colors.tealAccent.shade700),
+    );
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: WillPopScope(
@@ -75,7 +76,6 @@ class _HomepageState extends State<Homepage> {
                     ),
                     onChanged: (val) {
                       _searchList.clear();
-
                       for (var i in _list) {
                         if (i.name.toLowerCase().contains(val.toLowerCase()) ||
                             i.email.toLowerCase().contains(val.toLowerCase())) {
@@ -98,9 +98,9 @@ class _HomepageState extends State<Homepage> {
               IconButton(
                 onPressed: () {
                   Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => Profilescreen(user: APIs.me)));
+                    context,
+                    MaterialPageRoute(builder: (_) => Profilescreen(user: APIs.me)),
+                  );
                 },
                 icon: Icon(Icons.more_vert),
               )
@@ -110,104 +110,123 @@ class _HomepageState extends State<Homepage> {
             padding: const EdgeInsets.all(8.0),
             child: FloatingActionButton(
               onPressed: () async {
-               _showuserexists();
+                _showuserexists();
               },
               backgroundColor: Colors.tealAccent.shade700,
               child: Icon(Icons.add_comment_rounded, color: Colors.white),
             ),
           ),
-          body:  StreamBuilder(stream: APIs.getMyusers(), builder: (context,snapshot){
-                switch (snapshot.connectionState) {
-                case ConnectionState.waiting:
-                case ConnectionState.none:
-                  // return const Center(child: CircularProgressIndicator(),);
-
-                case ConnectionState.active:
-                case ConnectionState.done:
-           return StreamBuilder(
-            stream: APIs.getAllusers(
-              snapshot.data?.docs.map((e)=>e.id).toList()?? []
-            ),
+          body: StreamBuilder(
+            stream: APIs.getMyusers(),
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.waiting:
                 case ConnectionState.none:
-                  // return const Center(child: CircularProgressIndicator(),);
+                  return const Center(child: CircularProgressIndicator());
 
                 case ConnectionState.active:
                 case ConnectionState.done:
-                  final data = snapshot.data?.docs;
-                  _list = data?.map((e) => ChatUserData.fromJson(e.data())).toList() ?? [];
-
-                  if (_list.isNotEmpty) {
-                    return ListView.builder(
-                      itemCount: _isSearching ? _searchList.length : _list.length,
-                      itemBuilder: (context, index) {
-                        return ChatUser(user: _isSearching ? _searchList[index] : _list[index]);
-                      },
-                    );
-                  } else {
+                  final userIds = snapshot.data?.docs.map((e) => e.id).toList() ?? [];
+                  if (userIds.isEmpty) {
                     return Center(
                       child: Text(
-                        'No connection found',
+                        'No connections found',
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                       ),
                     );
                   }
+
+                  return StreamBuilder(
+                    stream: APIs.getAllusers(userIds),
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting:
+                        case ConnectionState.none:
+                          return const Center(child: CircularProgressIndicator());
+
+                        case ConnectionState.active:
+                        case ConnectionState.done:
+                          final data = snapshot.data?.docs;
+                          _list = data?.map((e) => ChatUserData.fromJson(e.data())).toList() ?? [];
+
+                          if (_list.isNotEmpty) {
+                            return ListView.builder(
+                              itemCount: _isSearching ? _searchList.length : _list.length,
+                              itemBuilder: (context, index) {
+                                return ChatUser(user: _isSearching ? _searchList[index] : _list[index]);
+                              },
+                            );
+                          } else {
+                            return Center(
+                              child: Text(
+                                'No connections found',
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
+                            );
+                          }
+                      }
+                    },
+                  );
               }
             },
-          );
-            }
-
-          })
+          ),
         ),
       ),
     );
   }
-  void _showuserexists(){
-    String email ='';
 
-    showDialog(context: context, builder: (_)=>AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
+  void _showuserexists() {
+    String email = '';
 
-        
-      ),
-      title: Row(
-        children: [
-          Icon(Icons.message,
-          color: Colors.blue,
-          size: 20,),
-          Text('Add user')
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.message, color: Colors.blue, size: 20),
+            SizedBox(width: 8),
+            Text('Add user'),
+          ],
+        ),
+        content: TextFormField(
+          maxLines: null,
+          onChanged: (value) => email = value,
+          decoration: InputDecoration(
+            hintText: 'Enter user email',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+          ),
+        ),
+        actions: [
+          MaterialButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.blue),
+            ),
+          ),
+          MaterialButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (email.isNotEmpty) {
+                APIs.showuserExists(email).then((value) {
+                  if (!value) {
+                    Dialogs.showSnackbar(context, 'User does not exist');
+                  }
+                });
+              }
+            },
+            child: Text(
+              'Add',
+              style: TextStyle(color: Colors.blue),
+            ),
+          ),
         ],
       ),
-      content: TextFormField(
-      maxLines: null,
-      onChanged: (value)=>email = value,
-      decoration: InputDecoration(
-        hintText: 'Enter user mail',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20))),
-      ),
-      actions: [
-        MaterialButton(onPressed: (){
-          Navigator.pop(context);
-        },
-        child: Text('Cancel',style:TextStyle(color: Colors.blue),)
-        ,),
-        MaterialButton(onPressed: (){
-          Navigator.pop(context);
-          if(email.isNotEmpty){
-          APIs.showuserExists(email).then((value){
-            if(!value){
-              Dialogs.showSnackbar(context, 'user does not exists');
-            }
-          });
-          }
-        },
-        child: Text('Add',style:TextStyle(color: Colors.blue),)
-        ,)
-      ],
-    ));
-    
+    );
   }
 }

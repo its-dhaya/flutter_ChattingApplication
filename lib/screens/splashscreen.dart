@@ -3,7 +3,6 @@ import 'package:chattify/api/apis.dart';
 import 'package:chattify/auth/loginscreen.dart';
 import 'package:chattify/main.dart';
 import 'package:chattify/screens/homepage.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

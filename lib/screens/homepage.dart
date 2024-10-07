@@ -4,7 +4,6 @@ import 'package:chattify/helper/dialog.dart';
 import 'package:chattify/screens/profilescreen.dart';
 import 'package:chattify/widgets/chat_user.dart';
 import 'package:chattify/widgets/chat_user_data.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

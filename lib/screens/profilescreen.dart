@@ -1,18 +1,13 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chattify/api/apis.dart';
 import 'package:chattify/auth/loginscreen.dart';
 import 'package:chattify/helper/dialog.dart';
 import 'package:chattify/main.dart';
 import 'package:chattify/screens/homepage.dart';
-import 'package:chattify/widgets/chat_user.dart';
 import 'package:chattify/widgets/chat_user_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';

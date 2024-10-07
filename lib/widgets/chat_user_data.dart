@@ -1,5 +1,3 @@
-import 'package:chattify/widgets/chat_user.dart';
-
 class ChatUserData {
   ChatUserData({
     required this.image,

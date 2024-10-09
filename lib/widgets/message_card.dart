@@ -3,11 +3,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chattify/api/apis.dart';
 import 'package:chattify/helper/date_util.dart';
 import 'package:chattify/helper/dialog.dart';
-import 'package:chattify/main.dart';
+import 'package:chattify/main.dart'; // Assuming this is where `flutterLocalNotificationsPlugin` is initialized
 import 'package:chattify/widgets/message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Import local notifications
 
 class MessageCard extends StatefulWidget {
   const MessageCard({super.key, required this.message});
@@ -33,6 +34,9 @@ class _MessageCardState extends State<MessageCard> {
   Widget _blueMessage() {
     if (widget.message.read.isEmpty) {
       APIs.updateMessageStatus(widget.message);
+
+      // Show a notification for the received message
+      _showNotification(widget.message);
     }
 
     return Row(
@@ -40,8 +44,11 @@ class _MessageCardState extends State<MessageCard> {
       children: [
         Flexible(
           child: Container(
-            padding: EdgeInsets.all(widget.message.type == Type.image ? mq.width * .03 : mq.width * .04),
-            margin: EdgeInsets.symmetric(horizontal: mq.width * .02, vertical: mq.height * .01),
+            padding: EdgeInsets.all(widget.message.type == Type.image
+                ? mq.width * .03
+                : mq.width * .04),
+            margin: EdgeInsets.symmetric(
+                horizontal: mq.width * .02, vertical: mq.height * .01),
             decoration: BoxDecoration(
               color: Color.fromARGB(255, 57, 154, 196),
               borderRadius: BorderRadius.circular(25),
@@ -58,7 +65,8 @@ class _MessageCardState extends State<MessageCard> {
                       placeholder: (context, url) => CircularProgressIndicator(
                         strokeWidth: 2,
                       ),
-                      errorWidget: (context, url, error) => Icon(Icons.image, size: 70),
+                      errorWidget: (context, url, error) =>
+                          Icon(Icons.image, size: 70),
                     ),
                   ),
           ),
@@ -89,15 +97,19 @@ class _MessageCardState extends State<MessageCard> {
               ),
             SizedBox(width: 2),
             Text(
-              DateUtil.getformatted(context: context, time: widget.message.sent),
+              DateUtil.getformatted(
+                  context: context, time: widget.message.sent),
               style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
         Flexible(
           child: Container(
-            padding: EdgeInsets.all(widget.message.type == Type.image ? mq.width * .03 : mq.width * .04),
-            margin: EdgeInsets.symmetric(horizontal: mq.width * .02, vertical: mq.height * .01),
+            padding: EdgeInsets.all(widget.message.type == Type.image
+                ? mq.width * .03
+                : mq.width * .04),
+            margin: EdgeInsets.symmetric(
+                horizontal: mq.width * .02, vertical: mq.height * .01),
             decoration: BoxDecoration(
               color: Colors.tealAccent.shade700,
               borderRadius: BorderRadius.circular(25),
@@ -114,12 +126,38 @@ class _MessageCardState extends State<MessageCard> {
                       placeholder: (context, url) => CircularProgressIndicator(
                         strokeWidth: 2,
                       ),
-                      errorWidget: (context, url, error) => Icon(Icons.image, size: 70),
+                      errorWidget: (context, url, error) =>
+                          Icon(Icons.image, size: 70),
                     ),
                   ),
           ),
         ),
       ],
+    );
+  }
+
+  // Show notification for the new message
+  Future<void> _showNotification(Messages message) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'chat_channel', // Channel ID
+      'Chat Notifications', // Channel name
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+
+    // Show notification
+    await flutterLocalNotificationsPlugin.show(
+      0, // Notification ID
+      'New Message', // Notification title
+      message.type == Type.text
+          ? message.msg
+          : 'You received a new image', // Notification body
+      platformChannelSpecifics,
     );
   }
 
@@ -138,7 +176,8 @@ class _MessageCardState extends State<MessageCard> {
                 margin: EdgeInsets.symmetric(
                     vertical: mq.height * .015, horizontal: mq.width * .4),
                 decoration: BoxDecoration(
-                    color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8)),
               ),
               widget.message.type == Type.text
                   ? _OptionItem(
@@ -236,51 +275,61 @@ class _MessageCardState extends State<MessageCard> {
         });
   }
 
-  void _showupdatemsg(){
+  void _showupdatemsg() {
     String updatemsg = widget.message.msg;
 
-    showDialog(context: context, builder: (_)=>AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-
-        
-      ),
-      title: Row(
-        children: [
-          Icon(Icons.message,
-          color: Colors.blue,
-          size: 20,),
-          Text('Edit')
-        ],
-      ),
-      content: TextFormField(initialValue: updatemsg,
-      maxLines: null,
-      onChanged: (value)=>updatemsg = value,
-      decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(20))),
-      ),
-      actions: [
-        MaterialButton(onPressed: (){
-          Navigator.pop(context);
-        },
-        child: Text('Cancel',style:TextStyle(color: Colors.blue),)
-        ,),
-        MaterialButton(onPressed: (){
-          Navigator.pop(context);
-          APIs.updateMessage(widget.message, updatemsg);
-        },
-        child: Text('Save',style:TextStyle(color: Colors.blue),)
-        ,)
-      ],
-    ));
-    
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.message,
+                    color: Colors.blue,
+                    size: 20,
+                  ),
+                  Text('Edit')
+                ],
+              ),
+              content: TextFormField(
+                initialValue: updatemsg,
+                maxLines: null,
+                onChanged: (value) => updatemsg = value,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20))),
+              ),
+              actions: [
+                MaterialButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel',
+                      style: TextStyle(color: Colors.blue, fontSize: 16)),
+                ),
+                MaterialButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    APIs.updateMessage(widget.message, updatemsg);
+                  },
+                  child: Text('Update',
+                      style: TextStyle(color: Colors.blue, fontSize: 16)),
+                ),
+              ],
+            ));
   }
 }
 
 class _OptionItem extends StatelessWidget {
+  const _OptionItem(
+      {required this.icon, required this.name, required this.onTap});
+
   final Icon icon;
   final String name;
   final VoidCallback onTap;
-  const _OptionItem({required this.icon, required this.name, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -288,21 +337,21 @@ class _OptionItem extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: EdgeInsets.only(
-          left: mq.width * .05,
-          top: mq.height * .015,
-          bottom: mq.height * .02,
-        ),
+            left: mq.width * .05,
+            top: mq.height * .015,
+            bottom: mq.height * .015),
         child: Row(
           children: [
             icon,
-            Flexible(child: Text('  $name'))
+            Flexible(
+                child: Text(
+              '   $name',
+              style: TextStyle(
+                  fontSize: 16, color: Colors.black87, letterSpacing: 0.5),
+            ))
           ],
         ),
       ),
     );
-
-
   }
-
-
 }
